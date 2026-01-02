@@ -1,0 +1,63 @@
+import {
+  collection,
+  addDoc,
+  serverTimestamp,
+  doc,
+  updateDoc,
+  onSnapshot,
+} from "firebase/firestore";
+import { db } from "./firebase";
+
+export async function createOrder({ userId, shopId, totalPages, totalPrice }) {
+  if (!userId || !shopId) {
+    throw new Error("Missing userId or shopId");
+  }
+
+  const docRef = await addDoc(collection(db, "orders"), {
+    userId,
+    shopId,
+    totalPages,
+    totalPrice,
+    status: "pending",
+    files: [],
+    createdAt: serverTimestamp(),
+  });
+
+  return docRef.id;
+}
+
+export async function attachFilesToOrder(orderId, filesMeta) {
+  if (!orderId || !filesMeta?.length) {
+    throw new Error("Invalid orderId or filesMeta");
+  }
+
+  const orderRef = doc(db, "orders", orderId);
+
+  await updateDoc(orderRef, {
+    files: filesMeta,
+  });
+}
+
+export async function updateOrderStatus(orderId, status) {
+  const allowed = ["pending", "printing", "ready", "completed", "failed"];
+
+  if (!allowed.includes(status)) {
+    throw new Error("Invalid order status");
+  }
+
+  const orderRef = doc(db, "orders", orderId);
+  await updateDoc(orderRef, { status });
+}
+
+export function listenToOrder(orderId, callback) {
+  const orderRef = doc(db, "orders", orderId);
+
+  return onSnapshot(orderRef, (snapshot) => {
+    if (snapshot.exists()) {
+      callback({
+        id: snapshot.id,
+        ...snapshot.data(),
+      });
+    }
+  });
+}
