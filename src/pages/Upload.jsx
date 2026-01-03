@@ -6,7 +6,11 @@ import { analyzeFiles } from "../lib/fileAnalyzer";
 import { getUserLocation } from "../lib/geo";
 import { getTopShops } from "../lib/routing";
 import { calculatePricesForShops } from "../lib/pricing";
-import { createOrder, attachFilesToOrder } from "../lib/orders";
+import {
+  createOrder,
+  attachFilesToOrder,
+  updateOrderStatus,
+} from "../lib/orders";
 import { uploadFilesToCloudinary } from "../lib/cloudinary";
 
 function Upload() {
@@ -154,7 +158,7 @@ function Upload() {
                   onChange={() => setSelectedShop(shop)}
                 />
                 {shop.name} — ₹{shop.totalPrice}
-                &nbsp;(Queue: {shop.queueLength})
+                &nbsp;(Pages in Queue: {shop.queueLength})
               </label>
             </div>
           ))}

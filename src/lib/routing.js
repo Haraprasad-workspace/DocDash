@@ -15,10 +15,14 @@ export async function rankShops(userLocation) {
   const queueMap = {};
 
   for (const order of activeOrders) {
+    // count only relevant states
+    if (order.status !== "pending" && order.status !== "printing") continue;
+
     if (!queueMap[order.shopId]) {
       queueMap[order.shopId] = 0;
     }
-    queueMap[order.shopId]++;
+
+    queueMap[order.shopId] += order.totalPages;
   }
 
   // 3️⃣ Rank shops
