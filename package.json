@@ -13,10 +13,12 @@
     "@tailwindcss/vite": "^4.1.18",
     "crypto-js": "^4.2.0",
     "firebase": "^12.7.0",
+    "framer-motion": "^12.23.26",
     "pdfjs-dist": "^5.4.530",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-pdf": "^10.3.0",
+    "react-rough-notation": "^1.0.8",
     "react-router-dom": "^7.11.0",
     "tailwindcss": "^4.1.18"
   },

@@ -1,72 +1,61 @@
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
+import { AuthProvider } from "./context/AuthContext";
 
-// --- Student / User ---
 import Header from "./common/Header";
 import Footer from "./common/Footer";
 import Home from "./pages/Home";
-import UserLogin from "./pages/UserLogin";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Upload from "./pages/Upload";
-import OrderStatus from "./pages/OrderStatus";
 import Dashboard from "./pages/Dashboard";
+import OrderStatus from "./pages/OrderStatus";
 
-// --- Shop ---
-import ShopLogin from "./pages/shop/shopLogin";
 import ShopSetup from "./pages/shop/shopSetup";
 import ShopDashboard from "./pages/shop/ShopDashboard";
 
-// --- Auth ---
-import { AuthProvider } from "./context/AuthContext";
 import {
-  RedirectIfAuth,
   RequireAuth,
   RequireShop,
+  RedirectIfAuth,
 } from "./routes/ProtectedRoutes";
 
-function App() {
-  const BaseLayout = () => (
-    <>
-      <Header />
-      <Outlet />
-      <Footer />
-    </>
-  );
+import BackgroundDoodles from "./common/BackgroundDoodles";
 
+const BaseLayout = () => (
+  <>
+    <Header />
+    <Outlet />
+    <Footer />
+  </>
+);
+
+function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
+        <BackgroundDoodles />
         <Routes>
-          {/* =========================================
-              SECTION 1: SHOP OWNER ROUTES
-              (No Header/Footer)
-             ========================================= */}
-          <Route element={<RequireShop />}>
-            <Route path='/shop/setup' element={<ShopSetup />} />
-            <Route path='/shop/dashboard' element={<ShopDashboard />} />
-          </Route>
-
-          {/* Shop login (blocked if already logged in) */}
-          <Route element={<RedirectIfAuth />}>
-            <Route path='/shop/login' element={<ShopLogin />} />
-          </Route>
-
-          {/* =========================================
-              SECTION 2: STUDENT / USER ROUTES
-              (Wrapped in BaseLayout)
-             ========================================= */}
+          {/* Public */}
           <Route path='/' element={<BaseLayout />}>
             <Route index element={<Home />} />
 
-            {/* User login */}
             <Route element={<RedirectIfAuth />}>
-              <Route path='login/user' element={<UserLogin />} />
+              <Route path='login' element={<Login />} />
+              <Route path='register' element={<Register />} />
             </Route>
 
-            {/* User-only pages */}
+            {/* Student */}
             <Route element={<RequireAuth />}>
               <Route path='upload' element={<Upload />} />
-              <Route path='order/:orderId' element={<OrderStatus />} />
               <Route path='dashboard' element={<Dashboard />} />
+              <Route path='order/:orderId' element={<OrderStatus />} />
             </Route>
+          </Route>
+
+          {/* Shop */}
+          <Route element={<RequireShop />}>
+            <Route path='/shop/setup' element={<ShopSetup />} />
+            <Route path='/shop/dashboard' element={<ShopDashboard />} />
           </Route>
         </Routes>
       </AuthProvider>

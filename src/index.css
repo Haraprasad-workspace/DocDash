@@ -1,5 +1,151 @@
 @import "tailwindcss";
 
+@theme {
+  /* 
+    1. Core Brand Colors
+  */
+  --color-brand-bg: #FFFFFF;
+  --color-brand-surface-primary: #E5E7EB;
+  --color-brand-surface-secondary: #F3F4F6;
+  --color-brand-accent: #D1D5DB;
+
+  /* 
+    2. Text System 
+  */
+  --color-brand-text-primary: #111827;
+  --color-brand-text-body: #1F2937;
+  --color-brand-text-muted: #4B5563;
+  --color-brand-text-disabled: #9CA3AF;
+  --color-brand-text-link: #1F2937;
+  --color-brand-text-link-hover: #111827;
+
+  /* 
+    3. UI Surfaces 
+  */
+  --color-page-bg: transparent;
+  --color-section-bg: #F9FAFB;
+  --color-card-bg: #FFFFFF;
+  --color-card-hover: #F9FAFB;
+  --color-inset-panel: #EEF2F7;
+
+  /* 
+    4. Borders & Dividers 
+  */
+  --color-border-default: #D1D5DB;
+  --color-divider-light: #E5E7EB;
+  --color-divider-strong: #9CA3AF;
+  --color-focus-ring: #6B7280;
+
+  /* 
+    5. Buttons 
+  */
+  --color-btn-primary-bg: #111827;
+  --color-btn-primary-text: #FFFFFF;
+  --color-btn-primary-hover: #1F2937;
+  --color-btn-disabled-bg: #9CA3AF;
+  --color-btn-disabled-text: #E5E7EB;
+
+  --color-btn-secondary-bg: #F3F4F6;
+  --color-btn-secondary-text: #111827;
+  --color-btn-secondary-border: #D1D5DB;
+  --color-btn-secondary-hover: #E5E7EB;
+
+  --color-btn-ghost-text: #1F2937;
+  --color-btn-ghost-hover: #F3F4F6;
+
+  /* 
+    6. Forms 
+  */
+  --color-input-bg: #FFFFFF;
+  --color-input-border: #D1D5DB;
+  --color-input-focus: #6B7280;
+  --color-input-text: #111827;
+  --color-input-placeholder: #9CA3AF;
+  --color-input-disabled-bg: #F3F4F6;
+
+  /* 
+    7. Status Colors 
+  */
+  --color-status-info: #E5E7EB;
+  --color-status-success-bg: #DCFCE7;
+  --color-status-success-text: #166534;
+  --color-status-warning-bg: #FEF9C3;
+  --color-status-warning-text: #854D0E;
+  --color-status-error-bg: #FEE2E2;
+  --color-status-error-text: #7F1D1D;
+
+  /* 
+    8. Code Blocks 
+  */
+  --color-code-bg: #0F172A;
+  --color-code-text: #E5E7EB;
+  --color-code-inline-bg: #E5E7EB;
+  --color-code-inline-text: #111827;
+
+  /* 
+    9. Table Styling 
+  */
+  --color-table-header-bg: #F3F4F6;
+  --color-table-row-bg: #FFFFFF;
+  --color-table-row-hover: #F9FAFB;
+  --color-table-border: #D1D5DB;
+
+  /* Fonts */
+  --font-sans: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+}
+
+@layer base {
+  body {
+    background-color: #ffffff;
+    /* Subtle Dot Pattern */
+    background-image:
+      radial-gradient(circle at center, rgba(17, 24, 39, 0.03) 0, rgba(255, 255, 255, 0) 1px),
+      linear-gradient(to right, rgba(243, 244, 246, 0.4) 1px, transparent 1px),
+      linear-gradient(to bottom, rgba(243, 244, 246, 0.4) 1px, transparent 1px);
+    background-size: 24px 24px, 48px 48px, 48px 48px;
+    background-attachment: fixed;
+
+    color: var(--color-brand-text-body);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Add a large subtle ambient glow */
+  body::before {
+    content: '';
+    position: fixed;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle at 50% 50%, rgba(229, 231, 235, 0.2), transparent 60%);
+    z-index: -1;
+    pointer-events: none;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-brand-text-primary);
+    font-weight: 600;
+    letter-spacing: -0.025em;
+  }
+
+  a {
+    color: var(--color-brand-text-link);
+    text-decoration: none;
+    transition: color 0.15s ease;
+  }
+
+  a:hover {
+    color: var(--color-brand-text-link-hover);
+  }
+}
+
 @media print {
   body * {
     @apply invisible;
@@ -13,32 +159,4 @@
   .print-area {
     @apply fixed inset-0 bg-white p-6;
   }
-}
-
-
-:root {
-  font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color: #111;
-  background-color: #ffffff;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-body {
-  margin: 0;
-  min-width: 320px;
-  min-height: 100vh;
-}
-
-#root {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  width: 100%;
 }
