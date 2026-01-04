@@ -45,7 +45,14 @@ export async function attachFilesToOrder(orderId, filesMeta) {
 
 
 export async function updateOrderStatus(orderId, status) {
-  const allowed = ["pending", "printing", "ready", "completed", "failed","rejected"];
+  const allowed = [
+    "pending",
+    "printing",
+    "ready",
+    "completed",
+    "failed",
+    "rejected",
+  ];
 
   if (!allowed.includes(status)) {
     throw new Error("Invalid order status");

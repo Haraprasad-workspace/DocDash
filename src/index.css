@@ -1,5 +1,21 @@
 @import "tailwindcss";
 
+@media print {
+  body * {
+    @apply invisible;
+  }
+
+  .print-area,
+  .print-area * {
+    @apply visible;
+  }
+
+  .print-area {
+    @apply fixed inset-0 bg-white p-6;
+  }
+}
+
+
 :root {
   font-family: Inter, system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;

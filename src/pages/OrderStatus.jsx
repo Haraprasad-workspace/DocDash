@@ -10,6 +10,14 @@ const STATUS_LABELS = {
   failed: "Order failed",
 };
 
+const STATUS_COLORS = {
+  pending: "orange",
+  printing: "blue",
+  ready: "green",
+  completed: "gray",
+  failed: "red",
+};
+
 const OrderStatus = () => {
   const { orderId } = useParams();
   const [order, setOrder] = useState(null);
@@ -18,7 +26,6 @@ const OrderStatus = () => {
     if (!orderId) return;
 
     const unsubscribe = listenToOrder(orderId, setOrder);
-
     return () => unsubscribe();
   }, [orderId]);
 
@@ -33,9 +40,14 @@ const OrderStatus = () => {
       <p>
         <strong>Order ID:</strong> {order.id}
       </p>
+
       <p>
-        <strong>Status:</strong> {STATUS_LABELS[order.status]}
+        <strong>Status:</strong>{" "}
+        <span style={{ color: STATUS_COLORS[order.status] }}>
+          {STATUS_LABELS[order.status]}
+        </span>
       </p>
+
       <p>
         <strong>Total Pages:</strong> {order.totalPages}
       </p>
@@ -43,13 +55,26 @@ const OrderStatus = () => {
         <strong>Total Price:</strong> ₹{order.totalPrice}
       </p>
 
+      {order.status === "completed" && (
+        <p style={{ color: "green", marginTop: "1rem" }}>
+          ✅ Your order is completed. Please collect it from the shop.
+        </p>
+      )}
+
+      {order.status === "failed" && (
+        <p style={{ color: "red", marginTop: "1rem" }}>
+          ❌ Order failed. Please retry.
+        </p>
+      )}
+
       <h3 className='mt-4'>Files</h3>
-      {order.files.length === 0 && <p>No files attached yet</p>}
+
+      {order.files?.length === 0 && <p>No files attached yet</p>}
 
       <ul>
-        {order.files.map((file, idx) => (
+        {order.files?.map((file, idx) => (
           <li key={idx}>
-            <a href={file.url} target='_blank'>
+            <a href={file.url} target='_blank' rel='noreferrer'>
               {file.name}
             </a>{" "}
             ({file.pages} pages)
