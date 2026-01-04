@@ -5,6 +5,10 @@ import {
   doc,
   updateDoc,
   onSnapshot,
+  query,
+  where,
+  orderBy,
+  getDocs
 } from "firebase/firestore";
 import { db } from "./firebase";
 
@@ -38,8 +42,10 @@ export async function attachFilesToOrder(orderId, filesMeta) {
   });
 }
 
+
+
 export async function updateOrderStatus(orderId, status) {
-  const allowed = ["pending", "printing", "ready", "completed", "failed"];
+  const allowed = ["pending", "printing", "ready", "completed", "failed","rejected"];
 
   if (!allowed.includes(status)) {
     throw new Error("Invalid order status");
@@ -60,4 +66,18 @@ export function listenToOrder(orderId, callback) {
       });
     }
   });
+}
+
+export async function fetchUserOrders(userId) {
+  const q = query(
+    collection(db, "orders"),
+    where("userId", "==", userId),
+    orderBy("createdAt", "desc")
+  );
+
+  const snap = await getDocs(q);
+  return snap.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
 }
