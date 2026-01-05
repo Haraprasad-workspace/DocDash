@@ -303,7 +303,7 @@ function Upload() {
                               : "text-status-success-text"
                           }
                         >
-                          {shop.queueLength}
+                          {shop.queueLength} Pages
                         </span>
                       </span>
                     </div>

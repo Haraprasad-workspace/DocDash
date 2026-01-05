@@ -44,11 +44,9 @@ const Dashboard = () => {
   };
 
   const activeOrders = orders.filter((o) =>
-    ["pending", "printing", "ready"].includes(o.status)
+    ["pending", "printing", "ready", "rejected"].includes(o.status)
   );
-  const pastOrders = orders.filter((o) =>
-    ["completed", "failed"].includes(o.status)
-  );
+  const pastOrders = orders.filter((o) => ["failed"].includes(o.status));
 
   if (loading)
     return (
