@@ -1,71 +1,68 @@
 import { BrowserRouter, Routes, Route, Outlet } from "react-router-dom";
 
-// --- Existing Imports (Student Flow) ---
+// --- Student / User ---
 import Header from "./common/Header";
 import Footer from "./common/Footer";
 import Home from "./pages/Home";
-import UserLogin from "./pages/UserLogin";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Upload from "./pages/Upload";
-import OrderStatus from "./pages/OrderStatus";
 import Dashboard from "./pages/Dashboard";
 
-// --- NEW Imports (Shop Flow) ---
-import ShopLogin from "./pages/shop/shopLogin";
-import ShopSetup from "./pages/shop/shopSetup";
+// --- Shop ---
+import ShopSetup from "./pages/shop/ShopSetup";
 import ShopDashboard from "./pages/shop/ShopDashboard";
 
-// --- Context & Auth ---
+// --- Auth ---
 import { AuthProvider } from "./context/AuthContext";
-import { RequireAuth, RedirectIfAuth } from "./routes/ProtectedRoutes";
+import {
+  RedirectIfAuth,
+  RequireAuth,
+  RequireShop,
+} from "./routes/ProtectedRoutes";
+
 import BackgroundDoodles from "./common/BackgroundDoodles";
 
 function App() {
-  // Layout for Students (Header + Footer)
-  const BaseLayout = () => {
-    return (
-      <>
-        <Header />
-        <Outlet />
-        <Footer />
-      </>
-    );
-  };
+  const BaseLayout = () => (
+    <>
+      <Header />
+      <Outlet />
+      <Footer />
+    </>
+  );
 
   return (
     <BrowserRouter>
       <AuthProvider>
         <BackgroundDoodles />
         <Routes>
-
           {/* =========================================
-              SECTION 1: SHOP OWNER ROUTES
-              (No Header/Footer, separate logic)
+              SHOP OWNER ROUTES (No Header/Footer)
              ========================================= */}
-          <Route path="/shop/login" element={<ShopLogin />} />
-          <Route path="/shop/setup" element={<ShopSetup />} />
-          <Route path="/shop/dashboard" element={<ShopDashboard />} />
-
+          <Route element={<RequireShop />}>
+            <Route path='/shop/setup' element={<ShopSetup />} />
+            <Route path='/shop/dashboard' element={<ShopDashboard />} />
+          </Route>
 
           {/* =========================================
-              SECTION 2: STUDENT / USER ROUTES
-              (Wrapped in BaseLayout)
+              USER ROUTES (With Header/Footer)
              ========================================= */}
           <Route path='/' element={<BaseLayout />}>
             <Route index element={<Home />} />
 
-            {/* Logged-in users cannot see login */}
+            {/* Auth Pages (Redirect if logged in) */}
             <Route element={<RedirectIfAuth />}>
-              <Route path='login/user' element={<UserLogin />} />
+              <Route path='login' element={<Login />} />
+              <Route path='register' element={<Register />} />
             </Route>
 
-            {/* Only logged-in users */}
+            {/* Protected User Pages */}
             <Route element={<RequireAuth />}>
-              <Route path='upload' element={<Upload />} />
-              <Route path='order/:orderId' element={<OrderStatus />} />
-              <Route path='dashboard' element={<Dashboard />} />
+              <Route path='user/upload' element={<Upload />} />
+              <Route path='user/dashboard' element={<Dashboard />} />
             </Route>
           </Route>
-
         </Routes>
       </AuthProvider>
     </BrowserRouter>

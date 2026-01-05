@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.1.18",
+    "crypto-js": "^4.2.0",
     "firebase": "^12.7.0",
     "framer-motion": "^12.23.26",
     "pdfjs-dist": "^5.4.530",

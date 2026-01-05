@@ -37,7 +37,7 @@ function Login() {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
       await ensureUserDoc(result.user);
-      navigate("/upload");
+      navigate("/user/upload");
     } catch (err) {
       console.error(err);
       setError("Failed to sign in with Google.");
@@ -65,7 +65,7 @@ function Login() {
       }
 
       await ensureUserDoc(userCredential.user);
-      navigate("/upload");
+      navigate("/user/upload");
     } catch (err) {
       console.error(err);
       setError(err.message || "Authentication failed.");

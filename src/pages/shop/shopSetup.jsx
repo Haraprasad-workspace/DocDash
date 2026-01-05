@@ -9,7 +9,7 @@ const ShopSetup = () => {
     name: "",
     price: "",
     lat: null,
-    lng: null
+    lng: null,
   });
 
   // 1. Handle Geolocation
@@ -22,10 +22,10 @@ const ShopSetup = () => {
     // Show temporary loading state if needed
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
           lat: position.coords.latitude,
-          lng: position.coords.longitude
+          lng: position.coords.longitude,
         }));
       },
       (error) => {
@@ -73,7 +73,7 @@ const ShopSetup = () => {
           <div className="space-y-2">
             <label className="block text-sm font-semibold text-brand-text-primary">Shop Name</label>
             <input
-              type="text"
+              type='text'
               required
               placeholder="e.g. Campus Xerox Center"
               className="w-full px-4 py-3 bg-input-bg border border-input-border rounded-xl focus:ring-2 focus:ring-brand-text-primary focus:border-transparent outline-none transition-all placeholder:text-input-placeholder"
@@ -88,7 +88,7 @@ const ShopSetup = () => {
             <div className="relative">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-brand-text-muted font-bold">₹</span>
               <input
-                type="number"
+                type='number'
                 required
                 min="1"
                 placeholder="2"
@@ -131,7 +131,7 @@ const ShopSetup = () => {
 
           {/* Submit Button */}
           <button
-            type="submit"
+            type='submit'
             disabled={loading || !isLocationSet}
             className={`w-full py-4 px-6 rounded-xl font-bold tracking-wide shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-300 ${loading || !isLocationSet
                 ? "bg-btn-disabled-bg text-btn-disabled-text cursor-not-allowed shadow-none hover:translate-y-0"

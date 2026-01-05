@@ -2,46 +2,43 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // 🔓 Allow logged-in users to read shops
+    // --- 🏪 SHOPS COLLECTION ---
     match /shops/{shopId} {
+      // Anyone logged in can see the list of shops
       allow read: if request.auth != null;
-      // ✅ ADD THIS: Allow the shop owner to CREATE their shop
-      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
       
-      // ✅ ADD THIS: Allow the shop owner to UPDATE their details later
+      // Only the shop owner can create or update their own shop details
+      allow create: if request.auth != null && request.resource.data.ownerId == request.auth.uid;
       allow update: if request.auth != null && resource.data.ownerId == request.auth.uid;
     }
 
-    // 🔓 Allow logged-in users to read orders (for queue calc)
+    // --- 📄 ORDERS COLLECTION ---
     match /orders/{orderId} {
+      // 1. Read: Any logged-in user (Students need to see status, Shops need to see queue)
       allow read: if request.auth != null;
-    }
 
-    // 🔐 Allow users to create their own orders
-    match /orders/{orderId} {
+      // 2. Create: Any logged-in user (Students creating an order)
       allow create: if request.auth != null;
+
+      // 3. Update: Student (cancel) OR Shop Owner (update status)
+      // Checks if the user ID matches either the 'userId' or 'shopId' on the document
+      allow update: if request.auth != null && (
+        request.auth.uid == resource.data.userId || 
+        request.auth.uid == resource.data.shopId
+      );
+
+      // ✅ 4. DELETE: Student OR Shop Owner
+      // This is the fix for your "Missing Permissions" error.
+      allow delete: if request.auth != null && (
+        request.auth.uid == resource.data.userId || 
+        request.auth.uid == resource.data.shopId
+      );
     }
 
-    match /orders/{orderId} {
-
-  // Read: logged-in users (ok for queue calc)
-  allow read: if request.auth != null;
-
-  // Create: any logged-in user (student creates order)
-  allow create: if request.auth != null;
-
-  // Update: student OR shop owner
-  allow update: if request.auth != null
-    && (
-      request.auth.uid == resource.data.userId ||
-      request.auth.uid == resource.data.shopId
-    );
-}
-
-    // 🔐 Allow users to read their own user profile
+    // --- 👤 USERS COLLECTION ---
     match /users/{userId} {
-      allow read: if request.auth != null
-        && request.auth.uid == userId;
+      // Users can only read/write their own profile
+      allow read, write: if request.auth != null && request.auth.uid == userId;
     }
   }
 }

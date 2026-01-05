@@ -5,18 +5,20 @@ import {
   toggleShopStatus,
   getShopDetails,
 } from "../../services/shopService";
-import { updateOrderStatus } from "../../lib/orders";
+// ✅ Import deleteOrder here
+import { updateOrderStatus, deleteOrder } from "../../lib/orders";
 
 // 📦 PDF Library Imports
 import { Document, Page, pdfjs } from 'react-pdf';
 import "react-pdf/dist/Page/AnnotationLayer.css";
 import "react-pdf/dist/Page/TextLayer.css";
+import { logout } from "../../lib/logout";
 
 // 🔧 Worker Configuration
 pdfjs.GlobalWorkerOptions.workerSrc = `//unpkg.com/pdfjs-dist@${pdfjs.version}/build/pdf.worker.min.js`;
 
 export default function ShopDashboard() {
-  const { currentUser, logout } = useAuth();
+  const { currentUser } = useAuth();
   const [orders, setOrders] = useState([]);
   const [shop, setShop] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -45,9 +47,35 @@ export default function ShopDashboard() {
   // 2️⃣ Action Handlers
   const handleStatusChange = async (orderId, newStatus) => {
     try {
+      // ✅ CHECK: Does this status require deletion?
+      const shouldDelete = ['completed', 'failed', 'rejected'].includes(newStatus);
+
+      if (shouldDelete) {
+        let confirmMsg = "";
+        if (newStatus === 'completed') {
+          confirmMsg = "Order Delivered! ✅\n\nDelete this order and remove all files from storage?";
+        } else {
+          confirmMsg = "Marking as Failed/Rejected ❌\n\nThis will permanently delete the order and files. Continue?";
+        }
+
+        if (window.confirm(confirmMsg)) {
+          // A. Delete from Cloudinary + Firestore
+          await deleteOrder(orderId);
+
+          // B. Remove from UI immediately
+          setOrders(prev => prev.filter(o => o.id !== orderId));
+
+          alert("Order cleaned up successfully.");
+          return;
+        }
+      }
+
+      // If we are NOT deleting (e.g. printing, ready, or user clicked Cancel), update normally
       await updateOrderStatus(orderId, newStatus);
+
     } catch (error) {
-      alert("Error updating order: " + error.message);
+      console.error(error);
+      alert("Action failed: " + error.message);
     }
   };
 
@@ -83,8 +111,8 @@ export default function ShopDashboard() {
             <button
               onClick={handleToggleShop}
               className={`px-5 py-2.5 rounded-full font-bold text-sm transition-all shadow-sm ${shop?.isAvailable
-                  ? "bg-status-success-bg text-status-success-text border border-status-success-bg hover:shadow-md"
-                  : "bg-status-error-bg text-status-error-text border border-status-error-bg hover:shadow-md"
+                ? "bg-status-success-bg text-status-success-text border border-status-success-bg hover:shadow-md"
+                : "bg-status-error-bg text-status-error-text border border-status-error-bg hover:shadow-md"
                 }`}
             >
               <span className={`inline-block w-2 h-2 rounded-full mr-2 ${shop?.isAvailable ? "bg-green-600 animate-pulse" : "bg-red-600"}`}></span>
@@ -134,7 +162,7 @@ export default function ShopDashboard() {
           <div className="flex flex-col items-center justify-center py-24 bg-card-bg/50 rounded-3xl border border-dashed border-border-default text-center">
             <div className="w-20 h-20 bg-brand-surface-secondary rounded-full flex items-center justify-center text-4xl mb-4 grayscale opacity-50">😴</div>
             <h3 className="text-lg font-semibold text-brand-text-primary">No active orders</h3>
-            <p className="text-brand-text-muted">Waiting for students to send print jobs...</p>
+            <p className="text-brand-text-muted">Waiting for users to send print jobs...</p>
           </div>
         ) : (
           <div className="grid grid-cols-1 gap-6">
@@ -183,18 +211,15 @@ function OrderCard({ order, onUpdateStatus }) {
   // ✅ NEW: Handles System Print Dialog
   const handlePrint = async (fileUrl) => {
     try {
-      // 1. Fetch file as a Blob (Fixes Cross-Origin issues)
       const response = await fetch(fileUrl);
       const blob = await response.blob();
       const localUrl = URL.createObjectURL(blob);
 
-      // 2. Create an invisible Iframe
       const iframe = document.createElement("iframe");
       iframe.style.display = "none";
       iframe.src = localUrl;
       document.body.appendChild(iframe);
 
-      // 3. Print once loaded, then cleanup
       iframe.onload = () => {
         iframe.contentWindow.focus();
         iframe.contentWindow.print();
@@ -208,7 +233,6 @@ function OrderCard({ order, onUpdateStatus }) {
 
     } catch (err) {
       console.error("Auto-print failed, opening in new tab:", err);
-      // Fallback: Just open the file if print fails
       window.open(fileUrl, "_blank");
     }
   };
@@ -322,7 +346,6 @@ function OrderCard({ order, onUpdateStatus }) {
                   {renderPreview(file)}
                 </div>
 
-                {/* ✅ UPDATED PRINT BUTTON */}
                 <button
                   onClick={(e) => {
                     e.stopPropagation();

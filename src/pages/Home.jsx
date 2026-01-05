@@ -23,13 +23,13 @@ const Home = () => {
 
             <div className="flex flex-col sm:flex-row gap-5 justify-center pt-8">
               <button
-                onClick={() => navigate("/upload")}
+                onClick={() => navigate("/user/upload")}
                 className="px-8 py-4 text-lg font-semibold rounded-full bg-btn-primary-bg text-btn-primary-text hover:bg-btn-primary-hover shadow-lg hover:shadow-xl hover:-translate-y-1 transition-all duration-300"
               >
                 Get Started
               </button>
               <button
-                onClick={() => navigate("/login/user")}
+                onClick={() => navigate("/login")}
                 className="px-8 py-4 text-lg font-semibold rounded-full bg-btn-secondary-bg text-btn-secondary-text border border-btn-secondary-border hover:bg-btn-secondary-hover hover:border-brand-accent transition-all duration-300"
               >
                 Student Login
