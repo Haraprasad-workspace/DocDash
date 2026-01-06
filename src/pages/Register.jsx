@@ -5,7 +5,15 @@ import {
   createUserWithEmailAndPassword,
 } from "firebase/auth";
 import { auth, db } from "../firebase";
-import { doc, setDoc, serverTimestamp } from "firebase/firestore";
+import {
+  doc,
+  setDoc,
+  serverTimestamp,
+  collection,
+  query,
+  getDocs,
+  where,
+} from "firebase/firestore";
 import { useNavigate, Link } from "react-router-dom";
 
 function Register() {
@@ -16,6 +24,13 @@ function Register() {
   const [role, setRole] = useState("user");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+
+  async function emailAlreadyExists(email) {
+    const q = query(collection(db, "users"), where("email", "==", email));
+
+    const snap = await getDocs(q);
+    return !snap.empty;
+  }
 
   async function createUserDoc(user, selectedRole, displayName = "") {
     await setDoc(doc(db, "users", user.uid), {
@@ -30,19 +45,30 @@ function Register() {
   async function handleGoogleRegister() {
     setError("");
     setLoading(true);
+
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(auth, provider);
-      await createUserDoc(result.user, role, result.user.displayName);
 
-      if (role === "shop") {
-        navigate("/shop/setup");
-      } else {
-        navigate("/user/upload");
+      const email = result.user.email;
+
+      // 🔴 HARD BLOCK
+      const exists = await emailAlreadyExists(email);
+      if (exists) {
+        await auth.signOut();
+        setError("This email is already registered. Please log in.");
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      setError("Failed to register with Google.");
+
+      await setDoc(doc(db, "users", result.user.uid), {
+        uid: result.user.uid,
+        name: result.user.displayName || "",
+        email,
+        role,
+        createdAt: serverTimestamp(),
+      });
+
+      navigate(role === "shop" ? "/shop/setup" : "/user/upload");
     } finally {
       setLoading(false);
     }
@@ -52,22 +78,26 @@ function Register() {
     e.preventDefault();
     setError("");
     setLoading(true);
-    try {
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-      await createUserDoc(userCredential.user, role);
 
-      if (role === "shop") {
-        navigate("/shop/setup");
-      } else {
-        navigate("/user/upload");
+    try {
+      // 🔴 HARD BLOCK
+      const exists = await emailAlreadyExists(email);
+      if (exists) {
+        setError("This email is already registered. Please log in.");
+        return;
       }
-    } catch (err) {
-      console.error(err);
-      setError(err.message || "Registration failed.");
+
+      const cred = await createUserWithEmailAndPassword(auth, email, password);
+
+      await setDoc(doc(db, "users", cred.user.uid), {
+        uid: cred.user.uid,
+        name,
+        email,
+        role,
+        createdAt: serverTimestamp(),
+      });
+
+      navigate(role === "shop" ? "/shop/setup" : "/user/upload");
     } finally {
       setLoading(false);
     }
@@ -87,48 +117,70 @@ function Register() {
 
         <div className='mt-8 space-y-6'>
           {/* Role Selection */}
-          <div className="space-y-3">
-            <p className="text-center text-xs font-bold uppercase tracking-widest text-brand-text-muted">
+          <div className='space-y-3'>
+            <p className='text-center text-xs font-bold uppercase tracking-widest text-brand-text-muted'>
               I am a
             </p>
-            <div className="grid grid-cols-2 gap-4">
+            <div className='grid grid-cols-2 gap-4'>
               <button
-                type="button"
+                type='button'
                 onClick={() => setRole("user")}
-                className={`group relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-300 ${role === "user"
+                className={`group relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-300 ${
+                  role === "user"
                     ? "bg-brand-surface-primary border-brand-text-primary shadow-lg scale-[1.02]"
                     : "bg-white border-border-default hover:border-brand-text-muted opacity-80"
-                  }`}
+                }`}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-2 transition-colors ${role === "user" ? "bg-white" : "bg-gray-100"}`}>
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-2 transition-colors ${
+                    role === "user" ? "bg-white" : "bg-gray-100"
+                  }`}
+                >
                   👤
                 </div>
-                <span className={`font-bold transition-colors ${role === "user" ? "text-brand-text-primary" : "text-brand-text-muted"}`}>
+                <span
+                  className={`font-bold transition-colors ${
+                    role === "user"
+                      ? "text-brand-text-primary"
+                      : "text-brand-text-muted"
+                  }`}
+                >
                   User
                 </span>
                 {role === "user" && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-brand-text-primary text-white rounded-full flex items-center justify-center text-[10px] shadow-sm animate-in zoom-in duration-300">
+                  <div className='absolute -top-2 -right-2 w-6 h-6 bg-brand-text-primary text-white rounded-full flex items-center justify-center text-[10px] shadow-sm animate-in zoom-in duration-300'>
                     ✓
                   </div>
                 )}
               </button>
 
               <button
-                type="button"
+                type='button'
                 onClick={() => setRole("shop")}
-                className={`group relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-300 ${role === "shop"
+                className={`group relative flex flex-col items-center justify-center p-4 rounded-2xl border-2 transition-all duration-300 ${
+                  role === "shop"
                     ? "bg-brand-surface-primary border-brand-text-primary shadow-lg scale-[1.02]"
                     : "bg-white border-border-default hover:border-brand-text-muted opacity-80"
-                  }`}
+                }`}
               >
-                <div className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-2 transition-colors ${role === "shop" ? "bg-white" : "bg-gray-100"}`}>
+                <div
+                  className={`w-12 h-12 rounded-full flex items-center justify-center text-2xl mb-2 transition-colors ${
+                    role === "shop" ? "bg-white" : "bg-gray-100"
+                  }`}
+                >
                   🖨️
                 </div>
-                <span className={`font-bold transition-colors ${role === "shop" ? "text-brand-text-primary" : "text-brand-text-muted"}`}>
+                <span
+                  className={`font-bold transition-colors ${
+                    role === "shop"
+                      ? "text-brand-text-primary"
+                      : "text-brand-text-muted"
+                  }`}
+                >
                   Print Shop
                 </span>
                 {role === "shop" && (
-                  <div className="absolute -top-2 -right-2 w-6 h-6 bg-brand-text-primary text-white rounded-full flex items-center justify-center text-[10px] shadow-sm animate-in zoom-in duration-300">
+                  <div className='absolute -top-2 -right-2 w-6 h-6 bg-brand-text-primary text-white rounded-full flex items-center justify-center text-[10px] shadow-sm animate-in zoom-in duration-300'>
                     ✓
                   </div>
                 )}
